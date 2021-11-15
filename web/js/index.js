@@ -8,7 +8,7 @@
     }
 
     let os = getMobileOperatingSystem();
-    if (os == "iOS") document.querySelector("#androidDownloadBtn").style.display = "none";
-    if (os == "Android") document.querySelector("#iosDownloadBtn").style.display = "none";
+    if (os == "iOS") document.querySelectorAll("#androidDownloadBtn").forEach(e => {e.style.display = "none";});
+    if (os == "Android") document.querySelectorAll("#iosDownloadBtn").forEach(e => {e.style.display = "none";});
 
 })();

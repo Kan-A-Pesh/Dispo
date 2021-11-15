@@ -9,6 +9,11 @@
     width: calc(var(--font-size) * 150%);
 }
 
+.footer{
+    background: url("../svg/footer.svg");
+    background-size: cover;
+}
+
 @media only screen and (max-width:992px) {
     #home > #homeContainer{
         padding: 2em;
