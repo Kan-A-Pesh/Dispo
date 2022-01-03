@@ -1,4 +1,6 @@
-const sql = require("./Database");
+
+const sql = require("./../config/Database");
+const Session = require("./Session");
 
 class User {
 	/** @type {!int} */
@@ -80,53 +82,66 @@ class User {
 	 * @param {Request} req The user request
 	 * @return {?User} The user associated with the session token.
 	 */
-	static getRequestUser(req) {
+	static async getRequestUser(req)
+	{
 		let sessCookie = req.cookies["sessionid"];
 		let sessHeader = req.headers["sessionid"];
 		let sessToken = sessCookie;
 
-		if (sessToken == "") sessToken = sessHeader;
-		if (sessToken == "") return null;
+		if (!sessToken) sessToken = sessHeader;
+		if (!sessToken) return null; 
 
-		sql.query(
-			"SELECT * FROM `users` WHERE `authToken` = :authToken LIMIT 2",
+		let userId = Session.getSession(sessToken);
+
+		if (userId == null) return null;
+
+		return await this.getUserById(userId);
+	}
+
+	/**
+	 * Get a user from his id.
+	 * 
+	 * @param {number} userId The id of the user
+	 * @returns {?User} The user object or null if not found
+	 */
+	static async getUserById(userId)
+	{
+		var sqlResult = null;
+
+		var query = sql.query(
+			"SELECT * FROM `users` WHERE `id` = :id LIMIT 2",
 			{
-				authToken: sessToken,
+				id: userId,
 			},
 			(err, result) => {
 				if (err) {
-					console.log(
-						"Error while selecting user: " + err.sqlMessage
-					);
-					res.status(500).send(
-						JSON.stringify({
-							code: "500",
-							status: "Internal Server Error",
-							message: "Can't select user: " + err.sqlMessage,
-							sqlCode: err.code,
-							sqlNumber: err.errno,
-						})
-					);
-					return;
-				}
-
-				if (result.length == 1) {
-					let user = new User();
-
-					user.bio = result[0]["bio"];
-					user.calPrivacy = result[0]["calPrivacy"];
-					user.creationTime = new Date(result[0]["creationTime"]);
-					user.deviceToken = result[0]["deviceToken"];
-					user.displayName = result[0]["displayName"];
-					user.email = result[0]["email"];
-					user.id = result[0]["id"];
-					user.logTime = result[0]["logTime"];
-					user.name = result[0]["name"];
-				} else {
+					console.log("Error while selecting user: " + err.sqlMessage);
 					return null;
 				}
 			}
 		);
+		
+		// Wait for the query to complete
+		const ended = await new Promise(resolve => {setInterval(() => {if (query._ended == true)resolve(true);}, 250);})
+		var result = query._results[0];
+
+		if (result.length == 1) {
+			let user = new User();
+
+			user.bio = result[0]["bio"];
+			user.calPrivacy = result[0]["calPrivacy"];
+			user.creationTime = new Date(result[0]["creationTime"]);
+			user.deviceToken = result[0]["deviceToken"];
+			user.displayName = result[0]["displayName"];
+			user.email = result[0]["email"];
+			user.id = result[0]["id"];
+			user.logTime = result[0]["logTime"];
+			user.name = result[0]["name"];
+
+			sqlResult = user;
+		}
+
+		return sqlResult;
 	}
 }
 

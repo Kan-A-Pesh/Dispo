@@ -1,11 +1,11 @@
 import React from "react";
 import { Button, Icon, Text } from "@ui-kitten/components";
-import { View } from "react-native";
+import { RefreshControl, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 
 const fontSize = 12;
 
-module.exports = ({ startTime, endTime, contents, size }) => {
+export default ({ startTime, endTime, contents, size }) => {
 	const stringTime = (time) => {
 		let m = time.getMinutes();
 		m = m > 9 ? m : "0" + m;
@@ -126,6 +126,7 @@ module.exports = ({ startTime, endTime, contents, size }) => {
 		if (end > new Date(endTime)) {
 			end = endTime;
 			sEnd = true;
+			
 		}
 
 		start = getPositionByTime(start);
@@ -135,7 +136,7 @@ module.exports = ({ startTime, endTime, contents, size }) => {
 			<View
 				key={"prop.content." + i}
 				style={{
-					borderColor: content.color,
+					borderColor: "#"+content.color,
 					backgroundColor: "#F0F0F0",
 					marginLeft: 50,
 					borderLeftWidth: 5,
@@ -169,13 +170,13 @@ module.exports = ({ startTime, endTime, contents, size }) => {
 	}
 
 	return (
-		<ScrollView
+		<View
 			style={{
 				paddingHorizontal: 10,
 			}}
 		>
 			{dividers}
 			{elements}
-		</ScrollView>
+		</View>
 	);
 };

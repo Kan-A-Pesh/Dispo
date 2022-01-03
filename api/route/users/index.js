@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 const sql = require("./../../config/Database");
 const User = require("./../../models/User");
-const Cypher = require("../../models/Cypher.js");
+const Cypher = require("../../models/Cypher");
+const Session = require("../../models/Session");
 
 router.post("/", (req, res) => {
 	if (req.body.name === undefined || req.body.password === undefined) {
@@ -52,14 +53,11 @@ router.post("/", (req, res) => {
 		return;
 	}
 
-	let authToken = Cypher.generateToken();
-
 	sql.query(
-		"INSERT INTO `users` (`id`, `name`, `displayName`, `password`, `email`, `bio`, `calPrivacy`, `deviceToken`, `authToken`, `creationTime`) VALUES (NULL, :name, '', :password, '', '', 'F', NULL, :auth, CURRENT_TIMESTAMP)",
+		"INSERT INTO `users` (`id`, `name`, `displayName`, `password`, `email`, `bio`, `calPrivacy`, `deviceToken`, `creationTime`) VALUES (NULL, :name, '', :password, '', '', 'F', NULL, CURRENT_TIMESTAMP)",
 		{
 			name: req.body.name,
-			password: Cypher.encrypt(req.body.password, 10),
-			auth: authToken,
+			password: Cypher.encrypt(req.body.password),
 		},
 		(err, result) => {
 			if (err) {
@@ -80,6 +78,9 @@ router.post("/", (req, res) => {
 				return;
 			}
 
+			let authToken = Cypher.generateToken();
+			Session.createSession(result.insertId, authToken);
+
 			res.status(201).send(
 				JSON.stringify({
 					code: "201",
@@ -93,13 +94,35 @@ router.post("/", (req, res) => {
 	);
 });
 
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
 	if (req.query.q === undefined) {
-		res.status(400).send(
+		let user = null;
+		
+		if (req.query.id === undefined) {
+			user = await User.getRequestUser(req);
+		}
+		else{
+			user = await User.getUserById(req.query.id);
+		}
+	
+		if (user == null)
+		{
+			res.status(404).send(
+				JSON.stringify({
+					code: "404",
+					status: "Not found",
+					message: "No user found, try again by reconnecting or adding a query parameter or even a id parameter",
+				})
+			);
+			return;
+		}
+
+		res.status(200).send(
 			JSON.stringify({
-				code: "400",
-				status: "Bad request",
-				message: "The name is missing",
+				code: "200",
+				status: "OK",
+				message: "The user has been fetched.",
+				result: user,
 			})
 		);
 		return;

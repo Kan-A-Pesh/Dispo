@@ -1,17 +1,24 @@
 import React from 'react';
+import { View } from 'react-native';
+
 import { NavigationContainer } from '@react-navigation/native';
+
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { BottomNavigation, BottomNavigationTab, Icon, Text, Button } from '@ui-kitten/components';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
 import CompareScreen from './../screens/CompareScreen';
 import DiscoverScreen from './../screens/DiscoverScreen';
 import ProfileScreen from './../screens/ProfileScreen';
-import { View } from 'react-native';
+
+import ProfileNav from '../screens/EditProfileScreen';
 
 const { Navigator, Screen } = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
 
 const ScreenOptions = {
   headerStyle: {
-    backgroundColor: '#FFFFFF33',
+    backgroundColor: '#FFFFFF',
   },
   headerRight: () => {
 
@@ -67,18 +74,28 @@ const BottomTabBar = ({ navigation, state }) => (
   </BottomNavigation>
 );
 
-const TabNavigator = () => (
+const TabNavigator = ({navigation, onLogout}) => (
   <Navigator
     initialRouteName="Comparer"
     tabBar={props => <BottomTabBar {...props} />}>
     <Screen name='Découvrir' component={DiscoverScreen} options={ScreenOptions}/>
     <Screen name='Comparer' component={CompareScreen} options={ScreenOptions}/>
-    <Screen name='Profil' component={ProfileScreen} options={ScreenOptions}/>
+    <Screen name='Profil' options={ScreenOptions}>
+      {(props) => <ProfileScreen {...props} onLogout={onLogout} />}
+    </Screen>
   </Navigator>
 );
 
-module.exports = () => (
+export default ({onLogout}) => (
   <NavigationContainer>
-    <TabNavigator />
+    <Stack.Navigator>
+      <Stack.Screen name='Main' options={{
+        headerShown: false,
+      }}>
+        {(props) => <TabNavigator {...props} onLogout={onLogout} />}
+      </Stack.Screen>
+
+      { ProfileNav(Stack.Screen) }
+    </Stack.Navigator>
   </NavigationContainer>
 );

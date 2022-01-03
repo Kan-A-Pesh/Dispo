@@ -8,6 +8,7 @@ class Friends {
 
     /**
      * Creates an instance of Friends.
+     * 
      * @param {number} userId The id of the user linked to this.
      * @memberof Friends
      */
@@ -17,6 +18,7 @@ class Friends {
 
     /**
      * Callback called by a friend request with the result and the error.
+     * 
      * @callback requestCallback
      * @param {mysql.MysqlError} err
      * @param {number[]} result
@@ -24,6 +26,7 @@ class Friends {
 
     /**
      * Returns a part of the list of user's friends.
+     * 
      * @param {number} limit The maximum number of Friends in a page.
      * @param {number} offset The page number to load.
      * @param {requestCallback} callback The callback to call with the list of id linked to user's friends and the SQL error if there's one.
@@ -37,6 +40,33 @@ class Friends {
                 offset: offset * limit,
             },callback
         );
+    }
+
+    /**
+     * Returns whatever if the user is friend with the target or not.
+     * 
+     * @param {number} userId The id of the target
+     * @returns {boolean} True if the user is friend with the target, false if not.
+     */
+    isFriendWith(targetId) {
+        var rslt = false;
+
+        sql.query(
+            "SELECT userId, targetId FROM friends WHERE ((userId = :userId AND targetId = :targetId) OR (userId = :targetId AND targetId = :userId)) AND relationType = 'F' LIMIT 1",
+            {
+                userId: this.userId,
+                targetId: targetId
+            },
+            (err, result) => {
+                if (err) {console.log(err); return; }
+                if (result.length == 1)
+                {
+                    rslt = true;
+                }
+            }
+        );
+
+        return rslt;
     }
 
     /**
@@ -54,7 +84,7 @@ class Friends {
                 id: this.userId,
                 limit: limit,
                 offset: offset * limit,
-            },callback
+            }, callback
         );
     }
 

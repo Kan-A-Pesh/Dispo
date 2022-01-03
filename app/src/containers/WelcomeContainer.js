@@ -39,7 +39,7 @@ const CloseButton = () => {
     );
 }
 
-module.exports = () => {
+export default () => {
     return (
         <PaperOnboarding
             data={data}

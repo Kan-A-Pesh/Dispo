@@ -1,41 +1,86 @@
 import React from 'react';
-import { Avatar, Button, Icon, Text } from '@ui-kitten/components';
-import { StyleSheet, View } from 'react-native';
+import { Avatar, Button, Icon, Modal, Spinner, Text, Tooltip } from '@ui-kitten/components';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import ProfileAvatar from '../profile/ProfileAvatar';
+import { getAvatar } from '../../../api/classes/Avatars';
 
-module.exports = () => {
+export default ({onGroupChange, initialGroup}) => {
+
+    const [ttVisible, setTtVisible] = React.useState(false);
+
+    let profilesViews = [];
+
+    for (const profile of initialGroup) {
+        profilesViews.push(
+            <TouchableOpacity
+                style={styles.avatarContainer}
+                key={"prop.group.element."+profile}
+                onPress={() => {
+                    let index = initialGroup.indexOf(profile);
+                    if (index > -1) {
+                        initialGroup.splice(index, 1);
+                    }
+                    onGroupChange(initialGroup);
+                }}    
+            >
+                <ProfileAvatar size={60} url={getAvatar(profile)} />
+            </TouchableOpacity>
+        );
+    }
+
     return (
         <>
-            <View style={{
-                flexDirection: "row"
-            }}>
-                <Avatar style={styles.avatar} source={require('./../../../assets/avatar.png')}/>
-                <Avatar style={styles.avatar} source={require('./../../../assets/avatar.png')}/>
-                <Avatar style={styles.avatar} source={require('./../../../assets/avatar.png')}/>
-                <Avatar style={styles.avatar} source={require('./../../../assets/avatar.png')}/>
-                <Avatar style={styles.avatar} source={require('./../../../assets/avatar.png')}/>
-                <Button
-                    style={styles.avatar}
-                    appearance="filled"
-                    accessoryLeft={(props) => (
-                        <Icon {...props} 
-                            name="plus-circle-outline"
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                            }}
-                        />
-                    )}
-                />
-            </View>
+            <ScrollView
+                horizontal={true}
+                style={{
+                    flexDirection: "row",
+                    flexGrow: 0,
+                    padding: 7
+                }}
+            >
+                {profilesViews}
+                <Tooltip
+                    anchor={() => (<Button
+                        style={styles.avatarButton}
+                        appearance="outline"
+                        status="basic"
+                        accessoryLeft={(props) => (
+                            <Icon {...props} 
+                                name="plus"
+                            />
+                        )}
+                        onPress={() => {
+                            setTtVisible(true);
+                        }}
+                    />)}
+                    visible={ttVisible}
+                    placement={"right end"}
+                    style={{
+                        top: 20,
+                        paddingHorizontal: 10
+                    }}
+                    onBackdropPress={() => setTtVisible(false)}
+                >
+                    Appuyez sur + pour ajouter{"\n"}et touchez un avatar pour le supprimer
+                </Tooltip>
+            </ScrollView>
         </>
     );
 };
 
 const styles = StyleSheet.create({
-    avatar: {
+    avatarContainer: {
+        height: 60,
+        width: 60,
         margin: 4,
-        height: 45,
-        width: 45,
-        padding: 0
+        justifyContent: 'center',
+        alignItems: 'center',
     },
+    avatarButton: {
+        height: 60,
+        width: 60,
+        margin: 4,
+        padding: 0,
+        borderRadius: 30
+    }
   });

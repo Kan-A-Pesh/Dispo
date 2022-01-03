@@ -1,11 +1,12 @@
 import React from "react";
-import { Avatar, Button, Text, useTheme } from "@ui-kitten/components";
+import { Avatar, Button, Spinner, Text, useTheme } from "@ui-kitten/components";
 import { Image, View } from "react-native";
+import ProfileAvatar from "./ProfileAvatar";
 
-module.exports = ({ profile }) => {
+export default ({ profile, onEdit, onLogout }) => {
 	const theme = useTheme();
 
-	let ProfileButtons = () => {
+	let ProfileButtons = ({logout}) => {
 		return (
 			<View style={{ marginTop: 10, flexDirection: "row" }}>
 				<Button
@@ -13,8 +14,18 @@ module.exports = ({ profile }) => {
 					size="tiny"
 					status="basic"
 					appearance="outline"
+					onPress={() => onEdit()}
 				>
 					Modifier profil
+				</Button>
+				<Button
+					style={{ marginRight: 5 }}
+					size="tiny"
+					status="basic"
+					appearance="outline"
+					onPress={() => logout()}
+				>
+					Se déconnecter
 				</Button>
 			</View>
 		);
@@ -29,34 +40,27 @@ module.exports = ({ profile }) => {
 					paddingVertical: 10,
 				}}
 			>
-				<Image
-					style={{
-						height: 100,
-						width: 100,
-						marginRight: 20,
-						borderRadius: 50,
-					}}
-					source={{
-						uri: profile.avatar,
-					}}
-					defaultSource={require("./../../../assets/avatar.png")}
-				/>
+				<ProfileAvatar url={profile.avatar} />
 				<View
 					style={{
+						marginLeft: 20,
 						justifyContent: "center",
 					}}
 				>
 					<Text
 						style={{
 							fontSize: 20,
+							opacity: (profile.name)?1:.5
 						}}
 					>
-						{profile.name}
+						{profile.name || profile.username}
 					</Text>
-					<ProfileButtons />
+					<ProfileButtons logout={onLogout}/>
 				</View>
 			</View>
-			<Text
+			{
+				(profile.bio)?
+				<Text
 				style={{
 					paddingHorizontal: 20,
 					marginBottom: 10,
@@ -64,7 +68,8 @@ module.exports = ({ profile }) => {
 				numberOfLines={3}
 			>
 				{profile.bio}
-			</Text>
+			</Text>:<></>
+			}
 			<View
 				style={{
 					borderColor: theme["border-basic-color-2"],

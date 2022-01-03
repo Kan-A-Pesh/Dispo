@@ -11,10 +11,20 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 app.use((req, res, next) => {
-	if (req.headers["api-key"] == process.env.API_KEY) {
-		console.log(req.ip + " > " + req.method + " " + req.url);
+
+	res.header("Access-Control-Allow-Origin", "*");
+	res.header("Access-Control-Allow-Headers", "*");
+
+	if (req.method === "OPTIONS")
+	{
+		console.log("OPTIONS  " + req.ip + " > " + req.url);
+		res.status(100).end();
+	}
+	else if (req.headers["api-key"] == process.env.API_KEY || req.url.startsWith("/avatars/")) {
+		console.log("ACCEPTED " + req.ip + " > " + req.method + " " + req.url);
 		next();
 	} else {
+		console.log("DENIED   " + req.ip + " > " + req.method + " " + req.url);
 		res.status(401).send(
 			JSON.stringify({
 				code: "401",
